@@ -1,0 +1,47 @@
+parser/
+├── bin
+│   ├── makeSerialized.csh
+│   └── run-tb-preproc
+├── build.xml
+├── conf
+│   ├── atb-latest.conf
+│   └── ftb-latest.conf
+├── data
+│   ├── arabic-onesent-utf8.txt
+│   ├── chinese-onesent-gb18030.txt
+│   ├── chinese-onesent-unseg-gb18030.txt
+│   ├── chinese-onesent-unseg-utf8.txt
+│   ├── chinese-onesent-utf8.txt
+│   ├── english-onesent.txt
+│   ├── french-onesent.txt
+│   ├── german-onesent.txt
+│   ├── pos-sentences.txt
+│   └── testsent.txt
+├── DependencyParserDemo.java
+├── ejml-0.23.jar
+├── ejml-0.23-src.zip
+├── lexparser.bat
+├── lexparser-gui.bat
+├── lexparser-gui.command
+├── lexparser-gui.sh
+├── lexparser_lang.def
+├── lexparser-lang.sh
+├── lexparser-lang-train-test.sh
+├── lexparser.sh
+├── LICENSE.txt
+├── Makefile
+├── ParserDemo2.java
+├── ParserDemo.java
+├── pom.xml
+├── README_dependencies.txt
+├── README.txt
+├── ShiftReduceDemo.java
+├── slf4j-api-1.7.12-sources.jar
+├── slf4j-api.jar
+├── StanfordDependenciesManual.pdf
+├── stanford-parser-3.8.0-javadoc.jar
+├── stanford-parser-3.8.0-models.jar
+├── stanford-parser-3.8.0-sources.jar
+└── stanford-parser.jar
+
+3 directories, 41 files

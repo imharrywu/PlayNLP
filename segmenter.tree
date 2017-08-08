@@ -1,0 +1,75 @@
+segmenter/
+├── arabic
+│   ├── arz-habash-ddm-integrated
+│   │   ├── all
+│   │   ├── dev
+│   │   ├── test
+│   │   └── train
+│   ├── atb-diab-jhu2005-integrated
+│   │   ├── all
+│   │   ├── dev
+│   │   ├── test
+│   │   └── train
+│   ├── bn-monroe-ddm-integrated
+│   │   ├── all
+│   │   ├── dev
+│   │   ├── test
+│   │   └── train
+│   ├── edits.py
+│   ├── integrated_to_gold
+│   ├── output_to_tedeval.py
+│   ├── parse_integrated
+│   ├── tag_segmentation.py
+│   ├── tb-preproc
+│   ├── testfiles
+│   │   ├── arz-test.seg.utf8.txt
+│   │   ├── arz-test.utf8.txt
+│   │   ├── atb-test.seg.utf8.txt
+│   │   └── atb-test.utf8.txt
+│   ├── train_ar_segmenter_da.sh
+│   ├── train_ar_segmenter.sh
+│   └── utf8utils.py
+├── build.xml
+├── data
+│   ├── arabic-segmenter-atb+bn+arztrain.ser.gz
+│   ├── ctb.gz
+│   ├── ctb.prop
+│   ├── dict
+│   │   ├── as.non
+│   │   ├── character_list
+│   │   ├── character_list.as
+│   │   ├── character_list.gb18030
+│   │   ├── character_list.hk
+│   │   ├── char.ctb.list
+│   │   ├── ctb.non
+│   │   ├── hk.non
+│   │   ├── in.as
+│   │   ├── in.ctb
+│   │   ├── in.ctb.gb18030
+│   │   ├── in.hk
+│   │   ├── in.pk
+│   │   ├── in.pk.gb
+│   │   ├── Makefile
+│   │   ├── pku.non
+│   │   ├── pos_close
+│   │   │   └── char.ctb.list
+│   │   └── pos_open
+│   │       ├── character_list.as
+│   │       ├── character_list.hk
+│   │       ├── character_list.pku.gb
+│   │       └── character_list.pku.utf8
+│   ├── dict-chris6.ser.gz
+│   ├── norm.simp.utf8
+│   ├── pku.gz
+│   └── pku.prop
+├── README-Arabic.txt
+├── README-Chinese.txt
+├── SegDemo.java
+├── segment.bat
+├── segment.sh
+├── stanford-segmenter-3.8.0.jar
+├── stanford-segmenter-3.8.0-javadoc.jar
+├── stanford-segmenter-3.8.0-sources.jar
+└── test.simp.utf8
+
+9 directories, 63 files
