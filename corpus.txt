@@ -1,0 +1,15 @@
+(ROOT
+  (IP
+    (NP (NN 明天))
+    (VP
+      (VNV (VC 要) (AD 不) (VC 要))
+      (NP (NN 上班)))
+    (. ？)))
+
+nsubj(要-2, 明天-1)
+root(ROOT-0, 要-2)
+dep(要-2, 不-3)
+dep(要-2, 要-4)
+dobj(要-2, 上班-5)
+dep(要-2, ？-6)
+
