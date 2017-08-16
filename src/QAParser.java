@@ -12,6 +12,8 @@ import com.sun.net.httpserver.HttpServer;
 
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
 import edu.stanford.nlp.trees.Tree;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class QAParser {
 
@@ -40,11 +42,26 @@ public class QAParser {
 		System.out.println("Starting server...");
 		HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
 
+		// Parse a sentence and return tagged array of words.
+		// 1) default parser, the xinhuaFacttoredSegmenting;
+		// 2) then the custom models, trained-NNN.ser.gz
+		// Note: input must be segmented, before parsed by custom trained
+		// data.
 		System.out.println("Creating parser handler");
 		server.createContext("/parse", new ParseHandler());
 
+		// Score a group of sentences on trained data, and give a sort for
+		// suggestion;
 		System.out.println("Creating suggest handler");
 		server.createContext("/suggest", new SuggestHandler());
+
+		// Train with manually-tagged sentence from linguist;
+		System.out.println("Creating train handler");
+		server.createContext("/train", new SuggestHandler());
+
+		// Segment a sentence on user dictionary;
+		System.out.println("Creating segment handler");
+		server.createContext("/segment", new SuggestHandler());
 
 		server.start();
 	}
@@ -89,10 +106,21 @@ public class QAParser {
 		}
 	}
 
-	static String Parse(String sent) {
+	public static String Parse(String sent) {
+		JSONObject r = new JSONObject();
+		JSONArray a = Parse(lp, sent);
+		r.put("default", a);
+		int i = 0;
+		for (LexicalizedParser parser : lps) {
+			a = Parse(parser, sent);
+			r.put("" + (i++), a);
+		}
+		return r.toString();
+	}
+
+	private static JSONArray Parse(LexicalizedParser parser, String sent) {
 		System.out.println("Parse begin...");
-		String result = "";
-		Tree t = lp.parse(sent);
+		Tree t = parser.parse(sent);
 		// t.pennPrint();
 
 		// ChineseGrammaticalStructure gs = new ChineseGrammaticalStructure(t);
@@ -107,18 +135,19 @@ public class QAParser {
 
 		List<Tree> leaves = t.getLeaves();
 		Iterator<Tree> it = leaves.iterator();
+		JSONArray a = new JSONArray();
 		while (it.hasNext()) {
 			Tree leaf = it.next();
 			Tree start = leaf.parent(t);
 			String tag = start.value().toString().trim();
 			// System.out.println(tag);
 			// System.out.println(leaf.nodeString().trim());
-			JsonObject o = new JSONObject();
-			result += tag;
-			result += leaf.nodeString().trim();
+			JSONObject o = new JSONObject();
+			o.put("tag", tag);
+			o.put("word", leaf.nodeString().trim());
+			a.add(o);
 		}
-
-		return result;
+		return a;
 
 		// String pennTree = t.pennString();
 		// return pennTree;
