@@ -48,57 +48,48 @@ public class QAParser {
 		// Note: input must be segmented, before parsed by custom trained
 		// data.
 		System.out.println("Creating parser handler");
-		server.createContext("/parse", new ParseHandler());
+		server.createContext("/parse", new ContextHandler());
 
 		// Score a group of sentences on trained data, and give a sort for
 		// suggestion;
 		System.out.println("Creating suggest handler");
-		server.createContext("/suggest", new SuggestHandler());
+		server.createContext("/suggest", new ContextHandler());
 
 		// Train with manually-tagged sentence from linguist;
 		System.out.println("Creating train handler");
-		server.createContext("/train", new SuggestHandler());
+		server.createContext("/train", new ContextHandler());
 
 		// Segment a sentence on user dictionary;
 		System.out.println("Creating segment handler");
-		server.createContext("/segment", new SuggestHandler());
+		server.createContext("/segment", new ContextHandler());
 
 		server.start();
 	}
 
-	static class ParseHandler implements HttpHandler {
+	static class ContextHandler implements HttpHandler {
 		@Override
 		public void handle(HttpExchange t) throws IOException {
-			String sent = (String) t.getRequestURI().getQuery();
-			System.out.println("Parsing: " + sent);
-			String response = Parse(sent);
-			System.out.println("Parse done");
-			System.out.println(response);
-			try {
-				t.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8");
-				t.sendResponseHeaders(200, response.getBytes("UTF8").length);
-				OutputStream os = t.getResponseBody();
-				os.write(response.getBytes("UTF8"));
-				os.close();
-			} catch (IOException e) {
-				System.out.println(e);
-			}
-		}
-	}
+			String ctx = t.getRequestURI().getPath();
+			System.out.println("context: " + ctx);
+			String qry = (String) t.getRequestURI().getQuery();
+			String resp = "";
+			if (ctx.equals("/parse")) {
+				resp = Parse(qry);
+			} else if (ctx.equals("/segment")) {
 
-	static class SuggestHandler implements HttpHandler {
-		@Override
-		public void handle(HttpExchange t) throws IOException {
-			String sent = (String) t.getRequestURI().getQuery();
-			System.out.println("Scoring: " + sent);
-			String response = Parse(sent);
-			System.out.println("Score done");
-			System.out.println(response);
+			} else if (ctx.equals("/suggest")) {
+
+			} else if (ctx.equals("/train")) {
+
+			} else {
+
+			}
+			System.out.println(resp);
 			try {
 				t.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8");
-				t.sendResponseHeaders(200, response.getBytes("UTF8").length);
+				t.sendResponseHeaders(200, resp.getBytes("UTF8").length);
 				OutputStream os = t.getResponseBody();
-				os.write(response.getBytes("UTF8"));
+				os.write(resp.getBytes("UTF8"));
 				os.close();
 			} catch (IOException e) {
 				System.out.println(e);
