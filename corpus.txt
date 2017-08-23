@@ -1,32 +1,227 @@
 (ROOT
   (IP
-    (NP (NN 明天))
-    (VP
-      (VNV (VC 要) (AD 不) (VC 要))
-      (NP (NN 上班)))
-    (. ？)))
-
-nsubj(要-2, 明天-1)
-root(ROOT-0, 要-2)
-dep(要-2, 不-3)
-dep(要-2, 要-4)
-dobj(要-2, 上班-5)
-dep(要-2, ？-6)
+    (NP (NR 哈萨那可))
+    (VP (VC 是)
+      (NP
+        (QP (CD 一)
+          (CLP (M 个)))
+        (NP (NN 足球) (NN 强国))))))
 
 (ROOT
   (IP
-    (NP (NN 习近平))
-    (VP
-      (PP (P 对)
-        (QP (CD 九寨沟地震)))
-      (VP (VV 作出)
-        (NP (NN 指示))))
+    (NP (NN 番茄))
+    (PU ，)
+    (VP (VV 别名)
+      (NP
+        (ADJP (JJ 西红柿) (PU 、) (JJ 洋))
+        (NP (NN 柿子))))
     (PU 。)))
 
-nsubj(作出-4, 习近平-1)
-case(九寨沟地震-3, 对-2)
-nmod:prep(作出-4, 九寨沟地震-3)
-root(ROOT-0, 作出-4)
-dobj(作出-4, 指示-5)
-punct(作出-4, 。-6)
+(ROOT
+  (IP
+    (NP (NN 古名))
+    (VP
+      (NP (NT 六))
+      (VP
+        (VP (VV 月柿))
+        (PU 、)
+        (VP (VV 喜报)
+          (QP (CD 三)
+            (CLP (M 元))))))
+    (PU 。)))
+
+(ROOT
+  (IP
+    (PP (P 在)
+      (NP (NR 秘鲁)
+        (CC 和)
+        (NR 墨西哥)))
+    (PU ，)
+    (VP
+      (ADVP (AD 最初))
+      (VP (VV 称)
+        (IP
+          (NP (PN 之))
+          (VP (VC 为)
+            (NP (PU “)
+              (NP (NN 狼))
+              (NP (NR 桃))
+              (PU ”))))))
+    (PU 。)))
+
+(ROOT
+  (IP
+    (NP
+      (DP (DT 全体))
+      (NP (NN 生)))
+    (VP
+      (VP (VV 粘质)
+        (NP (NN 腺毛)))
+      (PU ，)
+      (VP (VE 有)
+        (NP
+          (ADJP (JJ 强烈))
+          (NP (NN 气味)))))
+    (PU 。)))
+
+(ROOT
+  (IP
+    (VP (VV 茎易)
+      (NP (NN 倒伏)))
+    (PU 。)))
+
+(ROOT
+  (IP
+    (IP
+      (NP
+        (NP (NR 叶羽状))
+        (NP (NN 复叶)
+          (CC 或)
+          (NN 羽状)))
+      (VP (VV 深裂)))
+    (PU ，)
+    (IP
+      (NP (NN 小叶))
+      (VP
+        (ADVP (AD 极))
+        (ADVP (AD 不))
+        (NP (NN 规则))))
+    (PU ，)
+    (IP
+      (VP (VV 大小不等)))
+    (PU ，)
+    (IP
+      (NP (NN 卵形)
+        (CC 或)
+        (NN 矩圆形))
+      (PU ，)
+      (NP (NN 边缘))
+      (VP (VE 有)
+        (NP
+          (ADJP (JJ 不规则))
+          (NP (NN 锯齿)
+            (CC 或)
+            (NN 裂片)))))
+    (PU 。)))
+
+(ROOT
+  (IP
+    (IP
+      (VP (VV 原产)
+        (NP (NR 南美洲))))
+    (PU ，)
+    (IP
+      (NP
+        (NP (NR 中国))
+        (NP (NN 南北)))
+      (VP
+        (ADVP (AD 广泛))
+        (VP (VV 栽培))))
+    (PU 。)))
+
+(ROOT
+  (IP
+    (IP
+      (NP (NN 番茄) (NN 营养))
+      (VP (VA 丰富)))
+    (PU ，)
+    (IP
+      (VP (VV 具)
+        (NP
+          (ADJP (JJ 特殊))
+          (NP (NN 风味)))))
+    (PU 。)))
+
+(ROOT
+  (IP
+    (VP
+      (VP (VV 具有)
+        (NP
+          (ADJP (JJ 减肥))
+          (NP (NN 瘦身))))
+      (PU 、)
+      (VP (VV 消除)
+        (NP (NN 疲劳)))
+      (PU 、)
+      (VP (VV 增进)
+        (NP (NN 食欲)))
+      (PU 、)
+      (VP (VV 提高)
+        (NP
+          (DNP
+            (PP (P 对)
+              (NP (NN 蛋白) (NN 质)))
+            (DEG 的))
+          (NP (NN 消化))))
+      (PU 、)
+      (VP (VV 减少)
+        (NP
+          (NP (NN 胃胀) (NN 食积) (ETC 等))
+          (NP (NN 功效)))))
+    (PU 。)))
+
+(ROOT
+  (IP
+    (NP (NN 番茄) (NN 起源) (NN 中心))
+    (VP (VC 是)
+      (NP
+        (DNP
+          (NP (NR 南美洲))
+          (DEG 的))
+        (NP (NR 安第斯))
+        (NP (NN 山) (NN 地带))))
+    (PU 。)))
+
+(ROOT
+  (IP
+    (NP
+      (CP
+        (IP
+          (VP
+            (NP (NT 现在))
+            (VP (VV 栽培)
+              (NP (NN 番茄)))))
+        (DEC 的))
+      (NP (NN 祖先)))
+    (VP (VC 是)
+      (NP (NN 樱桃) (NN 番茄)))
+    (PU 。)))
+
+(ROOT
+  (IP
+    (VP
+      (NP (NN 番茄))
+      (VP (VC 是)
+        (NP
+          (QP (CD 一)
+            (CLP (M 年)))
+          (NP (NN 生) (NN 草本) (NN 植物)))
+        (PU ，)))))
+
+(ROOT
+  (IP
+    (NP (NR 地中海) (NN 附近) (NN 国家))
+    (VP (VC 是)
+      (NP
+        (NP (NR 欧洲))
+        (DNP
+          (ADJP
+            (ADVP (AD 最))
+            (ADJP (JJ 主要)))
+          (DEG 的))
+        (NP (NN 番茄) (NN 生产) (NN 区域))))))
+
+(ROOT
+  (IP
+    (NP (NR 中国))
+    (VP
+      (ADVP (AD 已经))
+      (VP (VV 成为)
+        (NP
+          (NP (NR 番茄酱))
+          (QP (OD 第一))
+          (NP (NN 出口))
+          (ADJP (JJ 大))
+          (NP (NN 国)))))
+    (PU 。)))
 

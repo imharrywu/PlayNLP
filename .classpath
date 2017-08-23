@@ -4,8 +4,8 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="parser/stanford-parser-3.8.0-models.jar"/>
 	<classpathentry kind="lib" path="parser/slf4j-api.jar"/>
-	<classpathentry kind="lib" path="segmenter/stanford-segmenter-3.8.0.jar"/>
-	<classpathentry kind="lib" path="parser/stanford-parser.jar"/>
+	<classpathentry kind="lib" path="segmenter/stanford-segmenter-3.8.0.jar" sourcepath="segmenter/stanford-segmenter-3.8.0-sources.jar"/>
+	<classpathentry kind="lib" path="parser/stanford-parser.jar" sourcepath="parser/stanford-parser-3.8.0-sources.jar"/>
 	<classpathentry kind="lib" path="json-lib-2.4-jdk15.jar"/>
 	<classpathentry kind="lib" path="commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="commons-logging-api-1.1.1.jar"/>
