@@ -2,17 +2,22 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InvalidClassException;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StreamCorruptedException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -22,14 +27,32 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
+import edu.stanford.nlp.io.IOUtils;
+import edu.stanford.nlp.io.RuntimeIOException;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.HasWord;
+import edu.stanford.nlp.ling.SentenceUtils;
+import edu.stanford.nlp.parser.lexparser.BinaryGrammar;
+import edu.stanford.nlp.parser.lexparser.DependencyGrammar;
+import edu.stanford.nlp.parser.lexparser.EvaluateTreebank;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
+import edu.stanford.nlp.parser.lexparser.Lexicon;
+import edu.stanford.nlp.parser.lexparser.MLEDependencyGrammar;
+import edu.stanford.nlp.parser.lexparser.Options;
+import edu.stanford.nlp.parser.lexparser.UnaryGrammar;
+import edu.stanford.nlp.parser.lexparser.UnknownWordModel;
 import edu.stanford.nlp.process.DocumentPreprocessor;
 import edu.stanford.nlp.process.DocumentPreprocessor.DocType;
 import edu.stanford.nlp.process.TokenizerFactory;
 import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.Treebank;
 import edu.stanford.nlp.util.ErasureUtils;
+import edu.stanford.nlp.util.Generics;
+import edu.stanford.nlp.util.HashIndex;
+import edu.stanford.nlp.util.Index;
+import edu.stanford.nlp.util.ReflectionLoading;
+import edu.stanford.nlp.util.Timing;
+import edu.stanford.nlp.util.logging.Redwood;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -44,8 +67,12 @@ import net.sf.json.JSONObject;
 
 public class QAParser {
 
+	/** A logger for this class */
+	private static final Redwood.RedwoodChannels log = Redwood.channels(LexicalizedParser.class);
+
 	public static LexicalizedParser lp = null;
 	public static LexicalizedParser pcfgparser = null;
+	public static LexicalizedParser scorer = null;
 	public static List<LexicalizedParser> lps = new ArrayList<LexicalizedParser>();
 	public static CRFClassifier<CoreLabel> segmenter = null;
 
@@ -99,22 +126,27 @@ public class QAParser {
 		System.out.println("Creating parser handler");
 		server.createContext("/parse", new ContextHandler());
 
+		// Train with manually-tagged sentence from linguist;
+		System.out.println("Creating train handler");
+		server.createContext("/train", new ContextHandler());
+
 		// Create a handler for xinhua factored segmented parser
 		System.out.println("Creating xinhua factored segmented parser handler");
 		server.createContext("/xinhuaparse", new ContextHandler());
-
-		// Create a handler for PCFG parser
-		System.out.println("Creating PCFG parser handler");
-		server.createContext("/pcfgparse", new ContextHandler());
 
 		// Score a group of sentences on trained data, and give a sort for
 		// suggestion;
 		System.out.println("Creating suggest handler");
 		server.createContext("/suggest", new ContextHandler());
 
-		// Train with manually-tagged sentence from linguist;
-		System.out.println("Creating train handler");
-		server.createContext("/train", new ContextHandler());
+		// Score a group of sentences on trained data, and give a sort for
+		// suggestion;
+		System.out.println("Generating sentence handler");
+		server.createContext("/gen", new ContextHandler());
+
+		// Create a handler for PCFG parser
+		System.out.println("Creating PCFG parser handler");
+		server.createContext("/pcfgparse", new ContextHandler());
 
 		// Segment a sentence on user dictionary;
 		System.out.println("Creating segment handler");
@@ -137,9 +169,11 @@ public class QAParser {
 			} else if (ctx.equals("/segment")) {
 				resp = Segment(qry).toString();
 			} else if (ctx.equals("/suggest")) {
-
+				resp = "" + Suggest(qry);
 			} else if (ctx.equals("/train")) {
 				resp = Train(qry);
+			} else if (ctx.equals("/gen")) {
+				resp = Gen(qry);
 			} else {
 
 			}
@@ -306,20 +340,44 @@ public class QAParser {
 		return segmented;
 	}
 
-	static String Suggest(List<String> sents) {
-		System.out.println("Parse begin...");
-		Tree t = lp.parse("");
-		List<Tree> leaves = t.getLeaves();
-		Iterator<Tree> it = leaves.iterator();
-		while (it.hasNext()) {
-			Tree leaf = it.next();
-			Tree start = leaf.parent(t);
-			String tag = start.value().toString().trim();
-			System.out.println(tag);
-			System.out.println(leaf.nodeString().trim());
+	static double Suggest(String sentence) {
+		double score = Double.NEGATIVE_INFINITY;
+		for (LexicalizedParser parser : lps) {
+			Tree t = parser.parseStrings(Segment(sentence));
+			/*
+			 * Append("./tmp.txt", t.pennString());
+			 * 
+			 * BinaryGrammar bg = parser.bg; UnaryGrammar ug = parser.ug;
+			 * Lexicon lex = parser.lex;
+			 * 
+			 * Index<String> stateIndex = parser.stateIndex; Index<String>
+			 * wordIndex = new DeltaIndex<>(parser.wordIndex); Index<String>
+			 * tagIndex = parser.tagIndex;
+			 * 
+			 * ExhaustivePCFGParser exhparser = new ExhaustivePCFGParser(bg, ug,
+			 * lex, parser.getOp(), stateIndex, wordIndex, tagIndex);
+			 * 
+			 * // exhparser.scoreNonBinarizedTree(t);
+			 * 
+			 * exhparser.scoreBinarizedTree(t, 0);
+			 */
+			score = t.score();
+
+			// score = TestOnTreebank(parser, t);
+
 		}
-		String pennTree = t.pennString();
-		return pennTree;
+		System.out.println("Score: " + score);
+		return score;
+	}
+
+	public static String Gen(String sentence) {
+		for (LexicalizedParser parser : lps) {
+			Tree t = parser.parseStrings(Segment(sentence));
+			List<? extends HasWord> words = SentenceUtils.toCoreLabelList(t.yieldWords());
+			System.out.println(t.pennString());
+			return SentenceUtils.listToString(words);
+		}
+		return "";
 	}
 
 	private static boolean Append(String path, String content) {
@@ -339,6 +397,159 @@ public class QAParser {
 			return false;
 		}
 		return true;
+	}
+
+	private static double TestOnTreebank(LexicalizedParser parser, Tree t) {
+		double score = Double.NEGATIVE_INFINITY;
+
+		Options op = new Options();
+		op.tlpParams.setInputEncoding("utf-8");
+		op.tlpParams.setOutputEncoding("utf-8");
+
+		List<String> optionArgs = new ArrayList<>();
+		optionArgs.add("-outputFormat");
+		optionArgs.add("penn,typedDependenciesCollapsed");
+		optionArgs.add("-v");
+		String[] extraArgs = new String[optionArgs.size()];
+		extraArgs = optionArgs.toArray(extraArgs);
+
+		parser = LexicalizedParser.loadModel("./trained-0.ser.gz", op, extraArgs);
+		op = parser.getOp();
+
+		Treebank testTreebank = op.tlpParams.testMemoryTreebank();
+		// testTreebank.loadPath("./tmp.txt", null);
+		testTreebank.add(t);
+
+		op.trainOptions.sisterSplitters = Generics.newHashSet(Arrays.asList(op.tlpParams.sisterSplitters()));
+
+		EvaluateTreebank evaluator = new EvaluateTreebank(parser);
+		evaluator.testOnTreebank(testTreebank);
+
+		return score;
+	}
+
+	public static LexicalizedParser loadModel(String parserFileOrUrl, Options op, String... extraFlags) {
+		// log.info("Loading parser from file " + parserFileOrUrl);
+		LexicalizedParser parser = getParserFromFile(parserFileOrUrl, op);
+		if (extraFlags.length > 0) {
+			parser.setOptionFlags(extraFlags);
+		}
+		return parser;
+	}
+
+	public static LexicalizedParser getParserFromFile(String parserFileOrUrl, Options op) {
+		LexicalizedParser pd = getParserFromSerializedFile(parserFileOrUrl);
+		if (pd == null) {
+			pd = getParserFromTextFile(parserFileOrUrl, op);
+		}
+		return pd;
+	}
+
+	public static LexicalizedParser getParserFromSerializedFile(String serializedFileOrUrl) {
+		try {
+			Timing tim = new Timing();
+			ObjectInputStream in = IOUtils.readStreamFromString(serializedFileOrUrl);
+			LexicalizedParser pd = loadModel(in);
+
+			in.close();
+			log.info("Loading parser from serialized file " + serializedFileOrUrl + " ... done ["
+					+ tim.toSecondsString() + " sec].");
+			return pd;
+		} catch (InvalidClassException ice) {
+			// For this, it's not a good idea to continue and try it as a text
+			// file!
+			throw new RuntimeException("Invalid class in file: " + serializedFileOrUrl, ice);
+		} catch (FileNotFoundException fnfe) {
+			// For this, it's not a good idea to continue and try it as a text
+			// file!
+			throw new RuntimeException("File not found: " + serializedFileOrUrl, fnfe);
+		} catch (StreamCorruptedException sce) {
+			// suppress error message, on the assumption that we've really got
+			// a text grammar, and that'll be tried next
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static LexicalizedParser loadModel(ObjectInputStream ois) {
+		try {
+			Object o = ois.readObject();
+			if (o instanceof LexicalizedParser) {
+				return (LexicalizedParser) o;
+			}
+			throw new ClassCastException("Wanted LexicalizedParser, got " + o.getClass());
+		} catch (IOException e) {
+			throw new RuntimeIOException(e);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected static LexicalizedParser getParserFromTextFile(String textFileOrUrl, Options op) {
+		try {
+			Timing tim = new Timing();
+			BufferedReader in = IOUtils.readerFromString(textFileOrUrl);
+			Timing.startTime();
+
+			String line = in.readLine();
+			confirmBeginBlock(textFileOrUrl, line);
+			op.readData(in);
+
+			line = in.readLine();
+			confirmBeginBlock(textFileOrUrl, line);
+			Index<String> stateIndex = HashIndex.loadFromReader(in);
+
+			line = in.readLine();
+			confirmBeginBlock(textFileOrUrl, line);
+			Index<String> wordIndex = HashIndex.loadFromReader(in);
+
+			line = in.readLine();
+			confirmBeginBlock(textFileOrUrl, line);
+			Index<String> tagIndex = HashIndex.loadFromReader(in);
+
+			line = in.readLine();
+			confirmBeginBlock(textFileOrUrl, line);
+			Lexicon lex = op.tlpParams.lex(op, wordIndex, tagIndex);
+			String uwmClazz = line.split(" +")[2];
+			if (!uwmClazz.equals("null")) {
+				UnknownWordModel model = ReflectionLoading.loadByReflection(uwmClazz, op, lex, wordIndex, tagIndex);
+				lex.setUnknownWordModel(model);
+			}
+			lex.readData(in);
+
+			line = in.readLine();
+			confirmBeginBlock(textFileOrUrl, line);
+			UnaryGrammar ug = new UnaryGrammar(stateIndex);
+			ug.readData(in);
+
+			line = in.readLine();
+			confirmBeginBlock(textFileOrUrl, line);
+			BinaryGrammar bg = new BinaryGrammar(stateIndex);
+			bg.readData(in);
+
+			line = in.readLine();
+			confirmBeginBlock(textFileOrUrl, line);
+			DependencyGrammar dg = new MLEDependencyGrammar(op.tlpParams, op.directional, op.distance,
+					op.coarseDistance, op.trainOptions.basicCategoryTagsInDependencyGrammar, op, wordIndex, tagIndex);
+			dg.readData(in);
+
+			in.close();
+			log.info("Loading parser from text file " + textFileOrUrl + " ... done [" + tim.toSecondsString()
+					+ " sec].");
+			return new LexicalizedParser(lex, bg, ug, dg, stateIndex, wordIndex, tagIndex, op);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private static void confirmBeginBlock(String file, String line) {
+		if (line == null) {
+			throw new RuntimeException(file + ": expecting BEGIN block; got end of file.");
+		} else if (!line.startsWith("BEGIN")) {
+			throw new RuntimeException(file + ": expecting BEGIN block; got " + line);
+		}
 	}
 
 }

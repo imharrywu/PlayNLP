@@ -225,3 +225,34 @@
           (NP (NN 国)))))
     (PU 。)))
 
+(ROOT
+  (CP
+    (IP
+      (VP
+        (ADVP (AD 难道))
+        (PP
+          (NP (PN 你)))
+        (VP (VV 不认识)
+          (NP (NN 番茄)))))
+    (SP 吗) (PU ？)))
+
+
+(ROOT
+  (IP
+    (NP (PN 哪里))
+    (VP (VE 有)
+      (NP (NN 番茄)))
+    (PU ？)))
+
+(ROOT
+  (IP
+    (NP (NR 中国))
+    (VP
+      (PP (P 对)
+        (NP (NN 外观) (NN 设计) (NN 专利) (NN 申请)))
+      (VP (VV 实行)
+        (NP
+          (ADJP (JJ 初步))
+          (NP (NN 审查) (NN 制度)))))
+    (PU 。)))
+
